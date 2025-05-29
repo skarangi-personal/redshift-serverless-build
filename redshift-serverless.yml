@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Amazon Redshift Serverless with Audit Logging'
+
+Parameters:
+
+  Environment:
+    Type: String
+    Description: The deployment environment (e.g., dev, staging, prod).
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - live
+  
+
+  BaseCapacity:
+    Type: Number
+    Default: 8
+    Description: 'Base RPU capacity for the Redshift Serverless workgroup'
+    AllowedValues: [8, 16, 32, 64, 128, 256, 512]
+
+Resources:
+  # IAM Role for Redshift Serverless
+  RedshiftServerlessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: redshift-serverless.amazonaws.com
+            Action: 'sts:AssumeRole'
+      # More restrictive inline policy
+      Policies:
+        - PolicyName: RedshiftServerlessCustomPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource: 'arn:aws:s3:::redshift-dev-data/*' # Specify your S3 bucket
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                Resource: 'arn:aws:logs:*:*:*'
+
+  # Redshift Serverless Namespace
+  RedshiftServerlessNamespace:
+    Type: 'AWS::RedshiftServerless::Namespace'
+    Properties:
+      NamespaceName: !Sub 'redshift-namespace-${Environment}'
+      # Retrieve username and password from Secrets Manager
+      AdminUsername: '{{resolve:secretsmanager:MyRedshiftAdminSecret:SecretString:username}}'
+      AdminUserPassword: '{{resolve:secretsmanager:MyRedshiftAdminSecret:SecretString:password}}'
+      DbName: !Sub 'redshift_db_${Environment}'
+      DefaultIamRoleArn: !GetAtt RedshiftServerlessRole.Arn
+      LogExports:
+        - UserActivityLog
+
+  # Redshift Serverless Workgroup
+  RedshiftServerlessWorkgroup:
+    Type: 'AWS::RedshiftServerless::Workgroup'
+    Properties:
+      WorkgroupName: !Sub 'redshift-workgroup-${Environment}'
+      NamespaceName: !GetAtt RedshiftServerlessNamespace.NamespaceName
+      BaseCapacity: !Ref BaseCapacity
+      PubliclyAccessible: true
+      EnhancedVpcRouting: false
+      ConfigParameters:
+        - ParameterKey: 'enable_user_activity_logging'
+          ParameterValue: 'true'
+
+Outputs:
+  NamespaceArn:
+    Description: 'ARN of the Redshift Serverless Namespace'
+    Value: !GetAtt RedshiftServerlessNamespace.NamespaceArn
+
+  WorkgroupArn:
+    Description: 'ARN of the Redshift Serverless Workgroup'
+    Value: !GetAtt RedshiftServerlessWorkgroup.WorkgroupArn
+
+  RedshiftServerlessEndpoint:
+    Description: 'Endpoint for connecting to Redshift Serverless'
+    Value: !GetAtt RedshiftServerlessWorkgroup.Endpoint
