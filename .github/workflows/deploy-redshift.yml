@@ -1,0 +1,91 @@
+name: Deploy Redshift Serverless
+
+on:
+  # Automated Deployment: Trigger on pushes to the main branch
+  push:
+    branches:
+      - main
+    paths:
+      - 'redshift-serverless.yml'
+
+  # Manual Trigger: Allow manual deployment with environment selection
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+        - dev
+        - test
+        - live
+        default: 'dev'
+
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+  pull-requests: write # Required to add PR comments
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: us-east-1 # Change to your desired region
+
+      - name: Determine Environment
+        id: get_env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            # Default to 'dev' for automated pushes to main
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate CloudFormation Template
+        run: |
+          aws cloudformation validate-template --template-body file://redshift-serverless.yml
+
+      - name: Deploy to AWS CloudFormation
+        id: deploy
+        run: |
+          aws cloudformation deploy \
+            --template-file redshift-serverless.yml \
+            --stack-name redshift-serverless-stack-${{ steps.get_env.outputs.environment }} \
+            --parameter-overrides Environment=${{ steps.get_env.outputs.environment }} \
+            --capabilities CAPABILITY_IAM # Add if your template creates IAM resources
+        continue-on-error: true # Continue to allow for PR comment on failure
+
+      - name: Verify Deployment Status and Post PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue_number = context.issue.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+
+            if (${{ steps.deploy.outcome }} == 'success') {
+              github.rest.issues.createComment({
+                owner: owner,
+                repo: repo,
+                issue_number: issue_number,
+                body: `✅ Deployment to **${{ steps.get_env.outputs.environment }}** succeeded!`
+              });
+            } else {
+              github.rest.issues.createComment({
+                owner: owner,
+                repo: repo,
+                issue_number: issue_number,
+                body: `❌ Deployment to **${{ steps.get_env.outputs.environment }}** failed. Please check the workflow logs for details.`
+              });
+              core.setFailed('Deployment failed.');
+            }
