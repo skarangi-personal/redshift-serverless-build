@@ -101,7 +101,3 @@ Outputs:
   WorkgroupArn:
     Description: 'ARN of the Redshift Serverless Workgroup'
     Value: !GetAtt RedshiftServerlessWorkgroup.WorkgroupArn
-
-  RedshiftServerlessEndpoint:
-    Description: 'Endpoint for connecting to Redshift Serverless'
-    Value: !GetAtt RedshiftServerlessWorkgroup.Endpoint
