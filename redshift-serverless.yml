@@ -85,7 +85,7 @@ Resources:
     DependsOn: RedshiftServerlessRole
     Properties:
       WorkgroupName: !Sub 'redshift-workgroup-${Environment}'
-      NamespaceName: !GetAtt RedshiftServerlessNamespace.NamespaceName
+      NamespaceName: !Ref RedshiftServerlessNamespace   # <-- Use !Ref here
       BaseCapacity: !Ref BaseCapacity
       PubliclyAccessible: true
       EnhancedVpcRouting: false
