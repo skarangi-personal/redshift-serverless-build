@@ -7,7 +7,12 @@ on:
       - main
     paths:
       - 'redshift-serverless.yml'
-
+  
+  pull_request: # Add this trigger
+    branches:
+      - main
+    paths:
+      - 'redshift-serverless.yml'
   # Manual Trigger: Allow manual deployment with environment selection
   workflow_dispatch:
     inputs:
@@ -37,7 +42,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
-          aws-region: us-east-1 # Change to your desired region
+          aws-region: eu-central-1 # Change to your desired region
 
       - name: Determine Environment
         id: get_env
@@ -60,6 +65,7 @@ jobs:
             --template-file redshift-serverless.yml \
             --stack-name redshift-serverless-stack-${{ steps.get_env.outputs.environment }} \
             --parameter-overrides Environment=${{ steps.get_env.outputs.environment }} \
+            --Region=eu-central-1 \
             --capabilities CAPABILITY_IAM # Add if your template creates IAM resources
         continue-on-error: true # Continue to allow for PR comment on failure
 
