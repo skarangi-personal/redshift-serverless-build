@@ -70,11 +70,12 @@ Resources:
     DependsOn: RedshiftServerlessRole
     Properties:
       NamespaceName: !Sub 'redshift-namespace-${Environment}'
-      # Retrieve username and password from Secrets Manager
       AdminUsername: !Sub '{{resolve:secretsmanager:${RedshiftAdminSecretName}:SecretString:UserName}}'
       AdminUserPassword: !Sub '{{resolve:secretsmanager:${RedshiftAdminSecretName}:SecretString:Password}}'
       DbName: !Sub 'redshift_db_${Environment}'
       DefaultIamRoleArn: !GetAtt RedshiftServerlessRole.Arn
+      IamRoles:
+        - !GetAtt RedshiftServerlessRole.Arn # Must include the DefaultIamRoleArn
       LogExports:
         - useractivitylog
 
