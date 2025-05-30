@@ -67,6 +67,7 @@ Resources:
   # Redshift Serverless Namespace
   RedshiftServerlessNamespace:
     Type: 'AWS::RedshiftServerless::Namespace'
+    DependsOn: RedshiftServerlessRole
     Properties:
       NamespaceName: !Sub 'redshift-namespace-${Environment}'
       # Retrieve username and password from Secrets Manager
@@ -80,6 +81,7 @@ Resources:
   # Redshift Serverless Workgroup
   RedshiftServerlessWorkgroup:
     Type: 'AWS::RedshiftServerless::Workgroup'
+    DependsOn: RedshiftServerlessRole
     Properties:
       WorkgroupName: !Sub 'redshift-workgroup-${Environment}'
       NamespaceName: !GetAtt RedshiftServerlessNamespace.NamespaceName
