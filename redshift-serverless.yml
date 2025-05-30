@@ -11,7 +11,15 @@ Parameters:
       - dev
       - test
       - live
-  
+  Region:
+    Type: String
+    Default: eu-central-1
+    Description: 'AWS Region for deployment'
+    AllowedValues:
+      - eu-central-1
+      - eu-west-1
+      - us-east-1
+      - us-west-2
 
   BaseCapacity:
     Type: Number
@@ -61,7 +69,7 @@ Resources:
       DbName: !Sub 'redshift_db_${Environment}'
       DefaultIamRoleArn: !GetAtt RedshiftServerlessRole.Arn
       LogExports:
-        - UserActivityLog
+        - useractivitylog
 
   # Redshift Serverless Workgroup
   RedshiftServerlessWorkgroup:
