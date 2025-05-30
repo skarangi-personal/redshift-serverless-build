@@ -85,12 +85,10 @@ Resources:
     DependsOn: RedshiftServerlessRole
     Properties:
       WorkgroupName: !Sub 'redshift-workgroup-${Environment}'
-      NamespaceName: !Ref RedshiftServerlessNamespace   # <-- Use !Ref here
+      NamespaceName: !Ref RedshiftServerlessNamespace
       BaseCapacity: !Ref BaseCapacity
       PubliclyAccessible: true
       EnhancedVpcRouting: false
-      IamRoles:
-        - !GetAtt RedshiftServerlessRole.Arn
       ConfigParameters:
         - ParameterKey: 'enable_user_activity_logging'
           ParameterValue: 'true'
