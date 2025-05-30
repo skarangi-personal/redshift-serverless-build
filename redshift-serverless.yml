@@ -86,6 +86,8 @@ Resources:
       BaseCapacity: !Ref BaseCapacity
       PubliclyAccessible: true
       EnhancedVpcRouting: false
+      IamRoles:
+        - !GetAtt RedshiftServerlessRole.Arn
       ConfigParameters:
         - ParameterKey: 'enable_user_activity_logging'
           ParameterValue: 'true'
