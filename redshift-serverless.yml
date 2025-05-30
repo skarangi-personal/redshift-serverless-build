@@ -94,9 +94,9 @@ Resources:
           ParameterValue: 'true'
 
 Outputs:
-  NamespaceArn:
-    Description: 'ARN of the Redshift Serverless Namespace'
-    Value: !GetAtt RedshiftServerlessNamespace.NamespaceArn
+  NamespaceName:
+    Description: 'Name of the Redshift Serverless Namespace'
+    Value: !Ref RedshiftServerlessNamespace
 
   WorkgroupArn:
     Description: 'ARN of the Redshift Serverless Workgroup'
