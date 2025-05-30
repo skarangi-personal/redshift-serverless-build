@@ -65,7 +65,7 @@ jobs:
             --template-file redshift-serverless.yml \
             --stack-name redshift-serverless-stack-${{ steps.get_env.outputs.environment }} \
             --parameter-overrides Environment=${{ steps.get_env.outputs.environment }} \
-            --Region=eu-central-1 \
+            --region eu-central-1 \
             --capabilities CAPABILITY_IAM # Add if your template creates IAM resources
         continue-on-error: true # Continue to allow for PR comment on failure
 

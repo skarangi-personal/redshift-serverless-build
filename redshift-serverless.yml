@@ -28,7 +28,7 @@ Parameters:
     AllowedValues: [8, 16, 32, 64, 128, 256, 512]
 
 Resources:
-  # IAM Role for Redshift Serverless
+  # IAM Role for Redshift Serverless 
   RedshiftServerlessRole:
     Type: 'AWS::IAM::Role'
     Properties:
