@@ -93,11 +93,16 @@ Resources:
         - ParameterKey: 'enable_user_activity_logging'
           ParameterValue: 'true'
 
-Outputs:
-  NamespaceName:
-    Description: 'Name of the Redshift Serverless Namespace'
-    Value: !Ref RedshiftServerlessNamespace
-
-  WorkgroupArn:
-    Description: 'ARN of the Redshift Serverless Workgroup'
-    Value: !GetAtt RedshiftServerlessWorkgroup.WorkgroupArn
+# Outputs section for exposing key resource information
+# Outputs:
+#   NamespaceArn:
+#     Description: 'ARN of the Redshift Serverless Namespace'
+#     Value: !Ref RedshiftServerlessNamespace
+#   
+#   NamespaceName:
+#     Description: 'Name of the Redshift Serverless Namespace'
+#     Value: !Ref RedshiftServerlessNamespace
+#   
+#   WorkgroupId:
+#     Description: 'ID of the Redshift Serverless Workgroup'
+#     Value: !GetAtt RedshiftServerlessWorkgroup.WorkgroupId
